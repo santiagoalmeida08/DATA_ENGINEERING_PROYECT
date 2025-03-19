@@ -13,15 +13,17 @@ os.environ['SPARK_HOME'] = 'C:\\spark\\spark-3.5.4-bin-hadoop3'
 file_path = 'C:\\Users\\Usuario\\Desktop\\Pruebas_tecnicas\\Prueba_quid\\DATA_ENGINEERING_PROYECT\\data\\Films_2.xlsx'
 #Iniciar
 
-spark = SparkSession.builder.master('local[*]').config('spark.jars.packages', 'com.crealytics:spark-excel_2.13-3.5.0_0.20.3').appName('ELT').getOrCreate()
+spark = SparkSession.builder.master('local[*]').appName('ELT').getOrCreate()
 
 #Leer
 
 df_films = spark.read \
     .format('com.crealytics.spark.excel') \
-    .option('inferSchema','true') \
-    .option('dataAddress', 'inventory') \
+    .option('header', 'true') \
+    .option('dataAddress', "'film'!A1") \
     .load(file_path)
+    
+df_films.show()
     
     
 from pyspark.sql import SparkSession

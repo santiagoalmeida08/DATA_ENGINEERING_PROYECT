@@ -17,7 +17,6 @@ path = 'C:\\Users\\Usuario\\Desktop\\Pruebas_tecnicas\\Prueba_quid\\DATA_ENGINEE
 
 # Inicializar sesion de spark
 findspark.init()
-#spark = SparkSession.builder.appName('ETL_films').getOrCreate()
 
 # Extraemos los datos 
 
@@ -27,7 +26,6 @@ class Extraccion:
         self.file_path = file_path
         self.spark = SparkSession.builder \
                     .master('local[*]') \
-                    .config('spark.jars.packages', 'com.crealytics:spark-excel_2.13-3.5.0_0.20.3')\
                     .appName('ELT')\
                     .getOrCreate()
     
@@ -36,17 +34,19 @@ class Extraccion:
         """Metodo para leer los datos de un excel
         """
         try : 
+            
              
-            df_films = self.spark.read \
+            df = self.spark.read \
                 .format('com.crealytics.spark.excel') \
                 .option('inferSchema','true') \
-                .option('dataAddress', 'film') \
+                .option('header', 'true') \
+                .option('dataAddress', "'film'!A1") \
                 .load(self.file_path)
             
-            return df_films
+            return df
         
         except Exception as e:
             raise Exception(f'Error al extraer datos {e}')
     
-df = Extraccion(path + '\\Films_2.xlsx')
-df.show(10, truncate = False)
+df_films = Extraccion(path + '\\Films_2.xlsx').carga_datos()
+df_films.show(10, truncate = False)
