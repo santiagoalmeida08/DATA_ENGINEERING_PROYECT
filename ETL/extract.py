@@ -26,7 +26,7 @@ class Extraccion:
         self.file_path = file_path
         self.spark = SparkSession.builder \
                     .master('local[*]') \
-                    .appName('ELT')\
+                    .appName('Extract')\
                     .getOrCreate()
     
     def carga_datos(self):
@@ -47,6 +47,4 @@ class Extraccion:
         
         except Exception as e:
             raise Exception(f'Error al extraer datos {e}')
-    
-df_films = Extraccion(path + '\\Films_2.xlsx').carga_datos()
-df_films.show(10, truncate = False)
+        
