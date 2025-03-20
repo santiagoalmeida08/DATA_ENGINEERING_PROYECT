@@ -47,17 +47,5 @@ class Extraccion:
             logger.error(f"Error al extraer datos: {e}")
             raise
 
-#Testeando_clase
 
-"""
-df_films = Extraccion(path).extraccion_datos('film')
-df_inventory = Extraccion(path).extraccion_datos('inventory')
-df_retail = Extraccion(path).extraccion_datos('retail')
-df_retail = Extraccion(path).extraccion_datos('costumer')
-df_retail = Extraccion(path).extraccion_datos('store')
-
-
-df_films.printSchema()
-
-"""
 
