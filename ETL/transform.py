@@ -2,11 +2,11 @@
 
 import os
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql.functions import col, desc,lower,trim,to_date
+from pyspark.sql.functions import col,lower,trim,to_timestamp
 import pandas as pd 
 import logging 
 from extract import Extraccion
-from pyspark.sql.functions import regexp_extract, regexp_replace
+from pyspark.sql.functions import  regexp_replace
 from pyspark.sql.types import StringType, DateType, IntegerType
 
 # Establecer variables de entorno y ruta de acceso
@@ -26,7 +26,7 @@ try:
 
     df_films = ex.extraccion_datos('film')
     df_inventory = ex.extraccion_datos('inventory')
-    df_retail = ex.extraccion_datos('rental')
+    df_rental = ex.extraccion_datos('rental')
     df_customer = ex.extraccion_datos('customer')
     df_store = ex.extraccion_datos('store')
     
@@ -37,7 +37,7 @@ except Exception as e:
     raise
 
 #Testeo
-df_films.printSchema()
+df_rental.printSchema()
 
 class Transformacion:
     def __init__(self, df: DataFrame):
@@ -74,17 +74,34 @@ class Transformacion:
     
     
     def eliminar_caracteres_especiales(self):
+        
         for column in self.df.columns:
+            
             if isinstance(self.df.schema[column].dataType, StringType):
                 self.df = self.df.withColumn(column, 
-                                            regexp_replace(col(column), "[^a-zA-Z0-9@._-]", ""))
+                                            regexp_replace(col(column), r"[^a-zA-Z0-9@._\\-]", ""))
+            
+            if 'special_futures' in column.lower():
+                self.df = self.df.withColumn(column,
+                                             regexp_replace(col(column), r"[^a-zA-Z ]", ""))
                 
-                if "date" in column.lower():
+            if "date" in column.lower():
+                self.df = self.df.withColumn(
+                    column,
+                    regexp_replace(col(column), r"[^0-9-: ]", "")
+                ).withColumn(
+                    column,
+                    to_timestamp(col(column),"yyyy-MM-dd HH:mm:ss")
+                )
+                
+                
+            if "year" in column.lower():
                     self.df = self.df.withColumn(column, 
-                                                regexp_replace(col(column), "[^0-9-]", "")) \
-                                    .withColumn(column, to_date(col(column), "yyyy-MM-dd"))
-                    
+                                                regexp_replace(col(column), r"[^0-9]", "")) \
+                                    .withColumn(column, col(column).cast(IntegerType()))
+
         return self.df
+
     
     def transform(self):
         
@@ -96,7 +113,11 @@ class Transformacion:
         
     
 
-d_1 = Transformacion(df_films).analizar_datos()
+d_1 = Transformacion(df_films).estandarizacion()
+d2 = Transformacion(d_1).eliminar_caracteres_especiales()
+d2.show()
+
+
 
 
 
